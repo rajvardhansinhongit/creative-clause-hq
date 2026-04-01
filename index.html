@@ -798,23 +798,23 @@ const DB = {
 const NAV = {
   founder:[
     {label:'Overview',items:[{id:'dashboard',icon:'▣',label:'Dashboard'},{id:'calendar',icon:'◫',label:'Calendar'}]},
-    {label:'People',items:[{id:'freelancers',icon:'◈',label:'Freelancers',badge:()=>DB.freelancers.length},{id:'clients',icon:'⬡',label:'Clients',badge:()=>DB.clients.length}]},
-    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings',badge:()=>DB.meetings.length},{id:'projects',icon:'◎',label:'Projects',badge:()=>DB.projects.length},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'finance',icon:'◈',label:'Finance'},{id:'expenses',icon:'₹',label:'Expenses'}]},
-    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>DB.sops.length}]},
+    {label:'People',items:[{id:'freelancers',icon:'◈',label:'Freelancers',badge:()=>(DB.freelancers||[]).length},{id:'clients',icon:'⬡',label:'Clients',badge:()=>(DB.clients||[]).length}]},
+    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings',badge:()=>(DB.meetings||[]).length},{id:'projects',icon:'◎',label:'Projects',badge:()=>(DB.projects||[]).length},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>(DB.approvals||[]).filter(a=>a.status==='pending').length},{id:'finance',icon:'◈',label:'Finance'},{id:'expenses',icon:'₹',label:'Expenses'}]},
+    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>(DB.sops||[]).length}]},
     {label:'System',items:[{id:'admin',icon:'⚙',label:'Admin'},{id:'ai',icon:'✦',label:'AI Assistant'}]},
   ],
   manager:[
     {label:'Overview',items:[{id:'dashboard',icon:'▣',label:'Dashboard'},{id:'calendar',icon:'◫',label:'Calendar'}]},
     {label:'People',items:[{id:'freelancers',icon:'◈',label:'Freelancers'},{id:'clients',icon:'⬡',label:'Clients'}]},
-    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings'},{id:'projects',icon:'◎',label:'Projects'},{id:'tasks',icon:'✓',label:'All Tasks'},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'timetracker',icon:'⏱',label:'Time Tracker'}]},
-    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>DB.sops.length}]},
+    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings'},{id:'projects',icon:'◎',label:'Projects'},{id:'tasks',icon:'✓',label:'All Tasks'},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>(DB.approvals||[]).filter(a=>a.status==='pending').length},{id:'timetracker',icon:'⏱',label:'Time Tracker'}]},
+    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>(DB.sops||[]).length}]},
   ],
   freelancer:[
     {label:'My Work',items:[{id:'mytasks',icon:'✓',label:'My Tasks'},{id:'myprojects',icon:'◎',label:'My Projects'},{id:'calendar',icon:'◫',label:'Calendar'},{id:'timetracker',icon:'⏱',label:'Time Tracker'}]},
     {label:'Finance',items:[{id:'mypayouts',icon:'◈',label:'Payouts'}]},
   ],
   client:[
-    {label:'Account',items:[{id:'clientprojects',icon:'◎',label:'My Projects'},{id:'clientapprovals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'clientmeetings',icon:'◷',label:'Meetings'},{id:'clientfiles',icon:'▦',label:'Files'},{id:'calendar',icon:'◫',label:'Calendar'}]},
+    {label:'Account',items:[{id:'clientprojects',icon:'◎',label:'My Projects'},{id:'clientapprovals',icon:'✔',label:'Approvals',badge:()=>(DB.approvals||[]).filter(a=>a.status==='pending').length},{id:'clientmeetings',icon:'◷',label:'Meetings'},{id:'clientfiles',icon:'▦',label:'Files'},{id:'calendar',icon:'◫',label:'Calendar'}]},
   ],
 };
 
@@ -924,7 +924,7 @@ function renderDashboard(){
   const mc=document.getElementById('mainContent');
   if(r==='founder'||r==='manager'){
     document.getElementById('topbarRight').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openAddModal()">New</button>`;
-    const activeFL=DB.freelancers.filter(f=>f.status==='Active').length;
+    const activeFL=(DB.freelancers||[]).filter(f=>f.status==='Active').length;
     mc.innerHTML=`
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Freelancers</div><div class="stat-value">${DB.freelancers.length}</div><div class="stat-meta">${activeFL} active</div></div>
@@ -1153,8 +1153,8 @@ function renderAllTasks(){
 
 // ══════════ MY TASKS ══════════
 function renderMyTasks(){
-  const myTasks=DB.tasks.filter(t=>t.freelancer.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase()))||DB.tasks;
-  const taskList=myTasks.length?myTasks:DB.tasks;
+  const myTasks=(DB.tasks||[]).filter(t=>t.freelancer&&t.freelancer.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase()));
+  const taskList=myTasks.length?myTasks:(DB.tasks||[]);
   document.getElementById('mainContent').innerHTML=`
   <div class="sec-head"><div><div class="sec-title">My Tasks</div><div class="sec-sub">${taskList.length} assigned to you</div></div></div>
   ${taskList.map(t=>`
@@ -2070,7 +2070,7 @@ let timerInterval=null,timerSeconds=0,timerRunning=false,timerProject='',timerTa
 
 function renderTimeTracker(){
   const isFL=currentUser.role==='freelancer';
-  const myLogs=isFL?DB.timeLogs.filter(l=>l.freelancer.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase())):DB.timeLogs;
+  const myLogs=isFL?(DB.timeLogs||[]).filter(l=>l.freelancer&&l.freelancer.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase())):(DB.timeLogs||[]);
   const totalHrs=myLogs.reduce((s,l)=>s+l.hours,0);
 
   document.getElementById('mainContent').innerHTML=`
@@ -2214,7 +2214,7 @@ function saveManualLog(){
 // ══════════ APPROVALS (FOUNDER / MANAGER VIEW) ══════════
 function renderApprovals(){
   document.getElementById('topbarRight').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openAddApproval()">Submit for approval</button>`;
-  const pending=DB.approvals.filter(a=>a.status==='pending').length;
+  const pending=(DB.approvals||[]).filter(a=>a.status==='pending').length;
   document.getElementById('mainContent').innerHTML=`
   <div class="sec-head">
     <div><div class="sec-title">Approvals</div><div class="sec-sub">${pending} pending client approval${pending!==1?'s':''}</div></div>
