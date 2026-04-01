@@ -539,6 +539,86 @@ tbody tr:hover td{background:var(--s2);}
 .exp-cat-other{background:var(--s3);color:var(--t1);}
 .exp-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
 
+/* ─── SOP LIBRARY ───────────────────────────────── */
+.sop-card{
+  background:var(--s1);border:1px solid var(--b0);border-radius:var(--r-lg);
+  padding:18px 20px;margin-bottom:10px;transition:border-color var(--trans);
+  cursor:pointer;
+}
+.sop-card:hover{border-color:var(--b1);}
+.sop-card.expanded{border-color:var(--ac);}
+.sop-cat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:2px 9px;border-radius:4px;font-size:11px;font-weight:500;margin-bottom:8px;
+}
+.sop-cat-onboarding{background:var(--ac-lo);color:var(--ac);}
+.sop-cat-client{background:var(--green-lo);color:var(--green);}
+.sop-cat-delivery{background:var(--amber-lo);color:var(--amber);}
+.sop-cat-finance{background:rgba(59,130,246,.1);color:#60a5fa;}
+.sop-cat-internal{background:var(--s3);color:var(--t1);}
+.sop-body{
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--b0);
+  font-size:13px;color:var(--t1);line-height:1.8;
+  display:none;
+}
+.sop-body.open{display:block;}
+.sop-step{
+  display:flex;gap:10px;margin-bottom:8px;
+}
+.sop-step-num{
+  width:20px;height:20px;border-radius:50%;background:var(--ac-lo);
+  color:var(--ac);font-size:11px;font-weight:600;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.sop-step-text{font-size:13px;color:var(--t1);line-height:1.6;}
+.sop-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--b0);}
+
+/* ─── TIME TRACKER ───────────────────────────────── */
+.timer-widget{
+  background:var(--s1);border:1px solid var(--b0);border-radius:var(--r-lg);
+  padding:20px;margin-bottom:16px;
+}
+.timer-display{
+  font-size:42px;font-weight:600;letter-spacing:-1px;
+  color:var(--tx);font-variant-numeric:tabular-nums;
+  margin:12px 0;
+}
+.timer-display.running{color:var(--ac);}
+.timer-controls{display:flex;gap:8px;flex-wrap:wrap;}
+.time-log-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--b0);gap:12px;flex-wrap:wrap;
+}
+.time-log-row:last-child{border-bottom:none;}
+.time-log-hrs{
+  font-size:15px;font-weight:600;color:var(--tx);
+  background:var(--s3);padding:3px 10px;border-radius:6px;flex-shrink:0;
+}
+
+/* ─── APPROVAL FLOW ──────────────────────────────── */
+.approval-card{
+  background:var(--s1);border:1px solid var(--b0);border-radius:var(--r-lg);
+  padding:20px;margin-bottom:10px;transition:border-color var(--trans);
+}
+.approval-card.pending{border-left:3px solid var(--amber);}
+.approval-card.approved{border-left:3px solid var(--green);}
+.approval-card.changes{border-left:3px solid var(--red);}
+.approval-card.waiting{border-left:3px solid var(--ac);}
+.approval-meta{font-size:12px;color:var(--t2);margin-top:4px;}
+.approval-file-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--s3);border:1px solid var(--b0);
+  border-radius:var(--r-sm);padding:5px 10px;
+  font-size:12px;color:var(--t1);margin-right:6px;margin-top:6px;
+}
+.approval-comment{
+  background:var(--s2);border-radius:var(--r-sm);
+  padding:10px 12px;font-size:13px;color:var(--t1);
+  margin-top:10px;border-left:2px solid var(--b1);
+  font-style:italic;
+}
+.approval-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+
 /* ─── MOBILE ─────────────────────────────────────── */
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);}
@@ -719,20 +799,22 @@ const NAV = {
   founder:[
     {label:'Overview',items:[{id:'dashboard',icon:'▣',label:'Dashboard'},{id:'calendar',icon:'◫',label:'Calendar'}]},
     {label:'People',items:[{id:'freelancers',icon:'◈',label:'Freelancers',badge:()=>DB.freelancers.length},{id:'clients',icon:'⬡',label:'Clients',badge:()=>DB.clients.length}]},
-    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings',badge:()=>DB.meetings.length},{id:'projects',icon:'◎',label:'Projects',badge:()=>DB.projects.length},{id:'finance',icon:'◈',label:'Finance'},{id:'expenses',icon:'₹',label:'Expenses'}]},
+    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings',badge:()=>DB.meetings.length},{id:'projects',icon:'◎',label:'Projects',badge:()=>DB.projects.length},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'finance',icon:'◈',label:'Finance'},{id:'expenses',icon:'₹',label:'Expenses'}]},
+    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>DB.sops.length}]},
     {label:'System',items:[{id:'admin',icon:'⚙',label:'Admin'},{id:'ai',icon:'✦',label:'AI Assistant'}]},
   ],
   manager:[
     {label:'Overview',items:[{id:'dashboard',icon:'▣',label:'Dashboard'},{id:'calendar',icon:'◫',label:'Calendar'}]},
     {label:'People',items:[{id:'freelancers',icon:'◈',label:'Freelancers'},{id:'clients',icon:'⬡',label:'Clients'}]},
-    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings'},{id:'projects',icon:'◎',label:'Projects'},{id:'tasks',icon:'✓',label:'All Tasks'}]},
+    {label:'Work',items:[{id:'meetings',icon:'◷',label:'Meetings'},{id:'projects',icon:'◎',label:'Projects'},{id:'tasks',icon:'✓',label:'All Tasks'},{id:'approvals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'timetracker',icon:'⏱',label:'Time Tracker'}]},
+    {label:'Standards',items:[{id:'sops',icon:'📋',label:'SOPs',badge:()=>DB.sops.length}]},
   ],
   freelancer:[
-    {label:'My Work',items:[{id:'mytasks',icon:'✓',label:'My Tasks'},{id:'myprojects',icon:'◎',label:'My Projects'},{id:'calendar',icon:'◫',label:'Calendar'}]},
+    {label:'My Work',items:[{id:'mytasks',icon:'✓',label:'My Tasks'},{id:'myprojects',icon:'◎',label:'My Projects'},{id:'calendar',icon:'◫',label:'Calendar'},{id:'timetracker',icon:'⏱',label:'Time Tracker'}]},
     {label:'Finance',items:[{id:'mypayouts',icon:'◈',label:'Payouts'}]},
   ],
   client:[
-    {label:'Account',items:[{id:'clientprojects',icon:'◎',label:'My Projects'},{id:'clientmeetings',icon:'◷',label:'Meetings'},{id:'clientfiles',icon:'▦',label:'Files'},{id:'calendar',icon:'◫',label:'Calendar'}]},
+    {label:'Account',items:[{id:'clientprojects',icon:'◎',label:'My Projects'},{id:'clientapprovals',icon:'✔',label:'Approvals',badge:()=>DB.approvals.filter(a=>a.status==='pending').length},{id:'clientmeetings',icon:'◷',label:'Meetings'},{id:'clientfiles',icon:'▦',label:'Files'},{id:'calendar',icon:'◫',label:'Calendar'}]},
   ],
 };
 
@@ -743,7 +825,9 @@ const SECTION_TITLES={
   admin:'Admin',ai:'AI Assistant',tasks:'All Tasks',
   mytasks:'My Tasks',myprojects:'My Projects',mypayouts:'Payouts',
   clientprojects:'My Projects',clientmeetings:'Meetings',clientfiles:'Files',
-  calendar:'Calendar',expenses:'Expenses'
+  calendar:'Calendar',expenses:'Expenses',
+  sops:'SOP Library',timetracker:'Time Tracker',
+  approvals:'Approvals',clientapprovals:'Approvals'
 };
 
 // ══════════ LOGIN ══════════
@@ -814,6 +898,8 @@ function showSection(id,el){
     mytasks:renderMyTasks,myprojects:renderMyProjects,mypayouts:renderMyPayouts,
     clientprojects:renderClientProjects,clientmeetings:renderClientMeetings,clientfiles:renderClientFiles,
     calendar:renderCalendar,expenses:renderExpenses,
+    sops:renderSOPs,timetracker:renderTimeTracker,
+    approvals:renderApprovals,clientapprovals:renderClientApprovals,
   };
   if(renders[id])renders[id]();
   closeSb();
@@ -1828,6 +1914,469 @@ function saveExpense(){
   DB.activity.unshift({text:`Expense <strong>${title}</strong> logged (₹${amount.toLocaleString('en-IN')})`,color:'var(--amber)',time:'Just now'});
   closeModal();showToast('Expense added');
   if(currentSection==='expenses')renderExpenses();
+}
+
+
+
+// ══════════ SOP LIBRARY ══════════
+function renderSOPs(){
+  const isFounder=currentUser.role==='founder';
+  if(isFounder){
+    document.getElementById('topbarRight').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openAddSOP()">Add SOP</button>`;
+  }
+  const catClass={Onboarding:'sop-cat-onboarding',Client:'sop-cat-client',Delivery:'sop-cat-delivery',Finance:'sop-cat-finance',Internal:'sop-cat-internal'};
+  document.getElementById('mainContent').innerHTML=`
+  <div class="sec-head">
+    <div><div class="sec-title">SOP Library</div><div class="sec-sub">${DB.sops.length} standard operating procedures</div></div>
+  </div>
+  <div class="filter-bar">
+    <input class="finput" placeholder="Search SOPs…" oninput="filterSOPs(this.value)" id="sopSearch">
+    <select class="fselect" onchange="filterSOPCat(this.value)">
+      <option value="all">All categories</option>
+      <option>Onboarding</option><option>Client</option><option>Delivery</option><option>Finance</option><option>Internal</option>
+    </select>
+  </div>
+  <div id="sopList"></div>`;
+  renderSOPList(DB.sops);
+}
+
+function renderSOPList(list){
+  const catClass={Onboarding:'sop-cat-onboarding',Client:'sop-cat-client',Delivery:'sop-cat-delivery',Finance:'sop-cat-finance',Internal:'sop-cat-internal'};
+  const el=document.getElementById('sopList');if(!el)return;
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="icon">📋</div><div class="title">No SOPs found</div></div>`;return;}
+  el.innerHTML=list.map(sop=>`
+  <div class="sop-card" id="sop-${sop.id}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div style="flex:1">
+        <span class="sop-cat-tag ${catClass[sop.category]||'sop-cat-internal'}">${sop.category}</span>
+        <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px">${sop.title}</div>
+        <div style="font-size:12px;color:var(--t2)">${sop.steps.length} steps · Owner: ${sop.owner}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        <span class="badge ${sop.status==='Active'?'b-green':'b-neutral'}">${sop.status}</span>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSOP(${sop.id},event)">View ▾</button>
+      </div>
+    </div>
+    <div class="sop-body" id="sopBody-${sop.id}">
+      ${sop.steps.map((step,i)=>`
+      <div class="sop-step">
+        <div class="sop-step-num">${i+1}</div>
+        <div class="sop-step-text">${step}</div>
+      </div>`).join('')}
+      ${currentUser.role==='founder'?`
+      <div class="sop-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditSOP(${sop.id},event)">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="archiveSOP(${sop.id},event)">${sop.status==='Active'?'Archive':'Restore'}</button>
+      </div>`:''}
+    </div>
+  </div>`).join('');
+}
+
+function toggleSOP(id,e){
+  e.stopPropagation();
+  const body=document.getElementById('sopBody-'+id);
+  const card=document.getElementById('sop-'+id);
+  if(!body)return;
+  const isOpen=body.classList.contains('open');
+  // close all
+  document.querySelectorAll('.sop-body').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.sop-card').forEach(c=>c.classList.remove('expanded'));
+  if(!isOpen){body.classList.add('open');card.classList.add('expanded');}
+}
+
+function filterSOPs(q){
+  renderSOPList(DB.sops.filter(s=>s.title.toLowerCase().includes(q.toLowerCase())||s.category.toLowerCase().includes(q.toLowerCase())));
+}
+function filterSOPCat(cat){
+  renderSOPList(cat==='all'?DB.sops:DB.sops.filter(s=>s.category===cat));
+}
+function archiveSOP(id,e){
+  e.stopPropagation();
+  const s=DB.sops.find(s=>s.id===id);
+  if(s){s.status=s.status==='Active'?'Archived':'Active';renderSOPs();showToast(s.status==='Active'?'SOP restored':'SOP archived');}
+}
+function openAddSOP(){
+  document.getElementById('modalTitle').textContent='Add SOP';
+  document.getElementById('modalBody').innerHTML=`
+  <div class="fg"><label class="fl">SOP Title</label><input class="fi" id="sop-title" placeholder="Client Onboarding Process"></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fi-select" id="sop-cat"><option>Onboarding</option><option>Client</option><option>Delivery</option><option>Finance</option><option>Internal</option></select>
+    </div>
+    <div class="fg"><label class="fl">Owner</label>
+      <select class="fi-select" id="sop-owner"><option>Founder</option><option>Team Lead</option><option>Freelancer</option></select>
+    </div>
+  </div>
+  <div class="fg">
+    <label class="fl">Steps <span style="color:var(--t2);font-weight:400">(one per line)</span></label>
+    <textarea class="fi" id="sop-steps" rows="6" placeholder="Step 1: Send welcome email&#10;Step 2: Schedule kickoff call&#10;Step 3: Create Drive folder"></textarea>
+  </div>
+  <div class="ffoot">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveSOP()">Save SOP</button>
+  </div>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function saveSOP(){
+  const title=document.getElementById('sop-title').value.trim();
+  if(!title){showToast('Title required');return;}
+  const stepsRaw=document.getElementById('sop-steps').value.trim();
+  const steps=stepsRaw.split('\n').map(s=>s.replace(/^step\s*\d+:\s*/i,'').trim()).filter(Boolean);
+  if(!steps.length){showToast('Add at least one step');return;}
+  DB.sops.push({id:Date.now(),title,category:document.getElementById('sop-cat').value,owner:document.getElementById('sop-owner').value,status:'Active',steps});
+  closeModal();showToast('SOP added');
+  if(currentSection==='sops')renderSOPs();
+}
+function openEditSOP(id,e){
+  e.stopPropagation();
+  const sop=DB.sops.find(s=>s.id===id);if(!sop)return;
+  document.getElementById('modalTitle').textContent='Edit SOP';
+  document.getElementById('modalBody').innerHTML=`
+  <div class="fg"><label class="fl">SOP Title</label><input class="fi" id="sop-title" value="${sop.title}"></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fi-select" id="sop-cat">
+        ${['Onboarding','Client','Delivery','Finance','Internal'].map(c=>`<option ${c===sop.category?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Owner</label>
+      <select class="fi-select" id="sop-owner">
+        ${['Founder','Team Lead','Freelancer'].map(o=>`<option ${o===sop.owner?'selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Steps (one per line)</label>
+    <textarea class="fi" id="sop-steps" rows="6">${sop.steps.join('\n')}</textarea>
+  </div>
+  <div class="ffoot">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="updateSOP(${id})">Update</button>
+  </div>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function updateSOP(id){
+  const sop=DB.sops.find(s=>s.id===id);if(!sop)return;
+  sop.title=document.getElementById('sop-title').value.trim();
+  sop.category=document.getElementById('sop-cat').value;
+  sop.owner=document.getElementById('sop-owner').value;
+  const stepsRaw=document.getElementById('sop-steps').value.trim();
+  sop.steps=stepsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+  closeModal();showToast('SOP updated');
+  if(currentSection==='sops')renderSOPs();
+}
+
+// ══════════ TIME TRACKER ══════════
+let timerInterval=null,timerSeconds=0,timerRunning=false,timerProject='',timerTask='';
+
+function renderTimeTracker(){
+  const isFL=currentUser.role==='freelancer';
+  const myLogs=isFL?DB.timeLogs.filter(l=>l.freelancer.toLowerCase().includes(currentUser.name.split(' ')[0].toLowerCase())):DB.timeLogs;
+  const totalHrs=myLogs.reduce((s,l)=>s+l.hours,0);
+
+  document.getElementById('mainContent').innerHTML=`
+  <div class="sec-head">
+    <div><div class="sec-title">Time Tracker</div><div class="sec-sub">Log and track time across projects</div></div>
+  </div>
+
+  <div class="timer-widget">
+    <div style="font-size:13px;font-weight:500;color:var(--t2);margin-bottom:4px">Active timer</div>
+    <div class="timer-display" id="timerDisplay">00:00:00</div>
+    <div class="frow" style="margin-bottom:12px">
+      <div class="fg" style="margin-bottom:0">
+        <select class="fi-select" id="timerProject" style="width:100%">
+          <option value="">Select project…</option>
+          ${DB.projects.map(p=>`<option>${p.title}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <input class="fi" id="timerTask" placeholder="Task description…">
+      </div>
+    </div>
+    <div class="timer-controls">
+      <button class="btn btn-primary" id="timerStartBtn" onclick="startTimer()">▶ Start</button>
+      <button class="btn btn-ghost" onclick="stopTimer()" id="timerStopBtn" style="display:none">⏹ Stop & Log</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetTimer()">Reset</button>
+      <button class="btn btn-ghost btn-sm" onclick="openManualLog()">+ Log manually</button>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div class="sec-title" style="font-size:14px">${isFL?'My time logs':'All time logs'}</div>
+    <div style="display:flex;gap:16px">
+      <div style="text-align:right"><div style="font-size:12px;color:var(--t2)">Total logged</div><div style="font-size:18px;font-weight:600;color:var(--tx)">${totalHrs.toFixed(1)} hrs</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>${isFL?'Date':'Freelancer'}</th><th>Project</th><th>Task</th><th>Hours</th><th>Note</th></tr></thead>
+      <tbody id="timeLogBody"></tbody>
+    </table></div>
+  </div>`;
+
+  renderTimeLogs(myLogs);
+  // Restore running timer if any
+  if(timerRunning){
+    document.getElementById('timerDisplay').classList.add('running');
+    document.getElementById('timerStartBtn').style.display='none';
+    document.getElementById('timerStopBtn').style.display='inline-flex';
+    if(document.getElementById('timerProject'))document.getElementById('timerProject').value=timerProject;
+    if(document.getElementById('timerTask'))document.getElementById('timerTask').value=timerTask;
+  }
+}
+
+function renderTimeLogs(logs){
+  const tb=document.getElementById('timeLogBody');if(!tb)return;
+  const isFL=currentUser.role==='freelancer';
+  if(!logs.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="title">No logs yet</div><div class="sub">Start a timer or log manually</div></div></td></tr>`;return;}
+  tb.innerHTML=logs.map(l=>`<tr>
+    <td style="color:var(--t1)">${isFL?l.date:l.freelancer}</td>
+    <td style="font-weight:500">${l.project}</td>
+    <td style="color:var(--t1)">${l.task}</td>
+    <td><span class="time-log-hrs">${l.hours}h</span></td>
+    <td style="color:var(--t2);font-size:12px">${l.note||'—'}</td>
+  </tr>`).join('');
+}
+
+function startTimer(){
+  const proj=document.getElementById('timerProject')?.value;
+  const task=document.getElementById('timerTask')?.value.trim();
+  if(!proj){showToast('Select a project first');return;}
+  timerProject=proj;timerTask=task;
+  timerRunning=true;
+  document.getElementById('timerDisplay').classList.add('running');
+  document.getElementById('timerStartBtn').style.display='none';
+  document.getElementById('timerStopBtn').style.display='inline-flex';
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    const h=Math.floor(timerSeconds/3600).toString().padStart(2,'0');
+    const m=Math.floor((timerSeconds%3600)/60).toString().padStart(2,'0');
+    const s=(timerSeconds%60).toString().padStart(2,'0');
+    const disp=document.getElementById('timerDisplay');
+    if(disp)disp.textContent=`${h}:${m}:${s}`;
+  },1000);
+}
+
+function stopTimer(){
+  if(!timerRunning)return;
+  clearInterval(timerInterval);timerRunning=false;
+  const hrs=Math.round((timerSeconds/3600)*4)/4; // round to nearest 0.25
+  const today=new Date().toISOString().split('T')[0];
+  DB.timeLogs.unshift({id:Date.now(),freelancer:currentUser.name,project:timerProject,task:timerTask||'General work',hours:Math.max(0.25,hrs),date:today,note:'Logged via timer'});
+  DB.activity.unshift({text:`<strong>${currentUser.name}</strong> logged ${Math.max(0.25,hrs)}h on ${timerProject}`,color:'var(--green)',time:'Just now'});
+  showToast(`${Math.max(0.25,hrs)}h logged for ${timerProject}`);
+  timerSeconds=0;timerProject='';timerTask='';
+  document.getElementById('timerDisplay').classList.remove('running');
+  document.getElementById('timerStartBtn').style.display='inline-flex';
+  document.getElementById('timerStopBtn').style.display='none';
+  const disp=document.getElementById('timerDisplay');if(disp)disp.textContent='00:00:00';
+  if(currentSection==='timetracker')renderTimeTracker();
+}
+
+function resetTimer(){
+  clearInterval(timerInterval);timerRunning=false;timerSeconds=0;
+  const disp=document.getElementById('timerDisplay');
+  if(disp){disp.textContent='00:00:00';disp.classList.remove('running');}
+  const startBtn=document.getElementById('timerStartBtn');
+  const stopBtn=document.getElementById('timerStopBtn');
+  if(startBtn)startBtn.style.display='inline-flex';
+  if(stopBtn)stopBtn.style.display='none';
+}
+
+function openManualLog(){
+  document.getElementById('modalTitle').textContent='Log time manually';
+  document.getElementById('modalBody').innerHTML=`
+  <div class="fg"><label class="fl">Project</label>
+    <select class="fi-select" id="ml-project">
+      ${DB.projects.map(p=>`<option>${p.title}</option>`).join('')}
+    </select>
+  </div>
+  <div class="fg"><label class="fl">Task</label><input class="fi" id="ml-task" placeholder="What did you work on?"></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">Hours</label><input class="fi" id="ml-hours" type="number" step="0.25" min="0.25" placeholder="2.5"></div>
+    <div class="fg"><label class="fl">Date</label><input class="fi" id="ml-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+  </div>
+  <div class="fg"><label class="fl">Note (optional)</label><input class="fi" id="ml-note" placeholder="What did you complete?"></div>
+  <div class="ffoot">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveManualLog()">Log hours</button>
+  </div>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function saveManualLog(){
+  const hours=parseFloat(document.getElementById('ml-hours').value);
+  if(!hours||hours<=0){showToast('Enter valid hours');return;}
+  DB.timeLogs.unshift({id:Date.now(),freelancer:currentUser.name,project:document.getElementById('ml-project').value,task:document.getElementById('ml-task').value||'General work',hours,date:document.getElementById('ml-date').value,note:document.getElementById('ml-note').value});
+  closeModal();showToast(`${hours}h logged`);
+  if(currentSection==='timetracker')renderTimeTracker();
+}
+
+// ══════════ APPROVALS (FOUNDER / MANAGER VIEW) ══════════
+function renderApprovals(){
+  document.getElementById('topbarRight').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openAddApproval()">Submit for approval</button>`;
+  const pending=DB.approvals.filter(a=>a.status==='pending').length;
+  document.getElementById('mainContent').innerHTML=`
+  <div class="sec-head">
+    <div><div class="sec-title">Approvals</div><div class="sec-sub">${pending} pending client approval${pending!==1?'s':''}</div></div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="approvalTab('all',this)">All</div>
+    <div class="tab" onclick="approvalTab('pending',this)">Pending</div>
+    <div class="tab" onclick="approvalTab('changes',this)">Changes Requested</div>
+    <div class="tab" onclick="approvalTab('approved',this)">Approved</div>
+  </div>
+  <div id="approvalList"></div>`;
+  renderApprovalList('all');
+}
+
+function approvalTab(filter,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderApprovalList(filter);
+}
+
+function renderApprovalList(filter){
+  const list=filter==='all'?DB.approvals:DB.approvals.filter(a=>a.status===filter);
+  const el=document.getElementById('approvalList');if(!el)return;
+  const statusLabel={pending:'Awaiting Client',approved:'Approved ✓',changes:'Changes Requested',waiting:'Submitted'};
+  const statusBadgeClass={pending:'b-amber',approved:'b-green',changes:'b-red',waiting:'b-purple'};
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="icon">✔</div><div class="title">No approvals here</div><div class="sub">Submit a deliverable for client review</div></div>`;return;}
+  el.innerHTML=list.map(a=>`
+  <div class="approval-card ${a.status}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px">${a.title}</div>
+        <div class="approval-meta">${a.project} · ${a.client} · Submitted by ${a.submittedBy} on ${a.date}</div>
+        <div style="margin-top:8px">${a.files.map(f=>`<span class="approval-file-chip">📄 ${f}</span>`).join('')}</div>
+        ${a.note?`<div style="font-size:13px;color:var(--t2);margin-top:8px">${a.note}</div>`:''}
+        ${a.clientComment?`<div class="approval-comment">"${a.clientComment}"</div>`:''}
+      </div>
+      <span class="badge ${statusBadgeClass[a.status]}">${statusLabel[a.status]}</span>
+    </div>
+    ${a.status==='pending'?`
+    <div class="approval-btns">
+      <button class="btn btn-ghost btn-sm" onclick="openReminderModal(${a.id})">📧 Send reminder to client</button>
+      <button class="btn btn-danger btn-sm" onclick="cancelApproval(${a.id})">Cancel</button>
+    </div>`:''}
+    ${a.status==='changes'?`
+    <div class="approval-btns">
+      <button class="btn btn-primary btn-sm" onclick="resubmitApproval(${a.id})">Resubmit after changes</button>
+    </div>`:''}
+  </div>`).join('');
+}
+
+function cancelApproval(id){
+  DB.approvals=DB.approvals.filter(a=>a.id!==id);
+  showToast('Approval cancelled');
+  renderApprovals();
+}
+function resubmitApproval(id){
+  const a=DB.approvals.find(a=>a.id===id);
+  if(a){a.status='pending';a.clientComment='';showToast('Resubmitted for approval');}
+  renderApprovals();
+}
+function openReminderModal(id){
+  const a=DB.approvals.find(ap=>ap.id===id);if(!a)return;
+  document.getElementById('modalTitle').textContent='Send reminder';
+  document.getElementById('modalBody').innerHTML=`
+  <div class="info-box">This will simulate sending a reminder email to <strong>${a.client}</strong> for approval of <strong>${a.title}</strong>.</div>
+  <div class="fg"><label class="fl">Message preview</label>
+    <textarea class="fi" id="remind-msg" rows="4">Hi ${a.client} team,\n\nJust a quick reminder that "${a.title}" is awaiting your approval on the Creative Clause client portal.\n\nPlease review and approve at your earliest convenience.\n\nBest,\nCreative Clause</textarea>
+  </div>
+  <div class="ffoot">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="sendReminder(${id})">Send reminder</button>
+  </div>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function sendReminder(id){
+  closeModal();showToast('Reminder sent to client ✓');
+  DB.activity.unshift({text:`Reminder sent for approval: <strong>${DB.approvals.find(a=>a.id===id)?.title||'Deliverable'}</strong>`,color:'var(--ac)',time:'Just now'});
+}
+function openAddApproval(){
+  document.getElementById('modalTitle').textContent='Submit for client approval';
+  document.getElementById('modalBody').innerHTML=`
+  <div class="fg"><label class="fl">Deliverable title</label><input class="fi" id="ap-title" placeholder="Brand Identity v3 — Final Logos"></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">Project</label>
+      <select class="fi-select" id="ap-project">${DB.projects.map(p=>`<option>${p.title}</option>`).join('')}</select>
+    </div>
+    <div class="fg"><label class="fl">Client</label>
+      <select class="fi-select" id="ap-client">${DB.clients.map(c=>`<option>${c.name}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Files (comma separated names)</label><input class="fi" id="ap-files" placeholder="Logo_v3.pdf, Brand_Guide.pdf"></div>
+  <div class="fg"><label class="fl">Note for client</label><textarea class="fi" id="ap-note" rows="3" placeholder="Describe what you're submitting and any context…"></textarea></div>
+  <div class="ffoot">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveApproval()">Submit</button>
+  </div>`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function saveApproval(){
+  const title=document.getElementById('ap-title').value.trim();
+  if(!title){showToast('Title required');return;}
+  const filesRaw=document.getElementById('ap-files').value;
+  const files=filesRaw.split(',').map(f=>f.trim()).filter(Boolean);
+  DB.approvals.unshift({id:Date.now(),title,project:document.getElementById('ap-project').value,client:document.getElementById('ap-client').value,submittedBy:currentUser.name,date:new Date().toISOString().split('T')[0],status:'pending',files,note:document.getElementById('ap-note').value,clientComment:''});
+  DB.notifications.unshift({id:Date.now(),icon:'✔',text:`Approval submitted: <strong>${title}</strong> — awaiting client`,time:'Just now',unread:true});
+  DB.activity.unshift({text:`<strong>${title}</strong> submitted for client approval`,color:'var(--ac)',time:'Just now'});
+  closeModal();showToast('Submitted for approval');
+  if(currentSection==='approvals')renderApprovals();
+}
+
+// ══════════ CLIENT APPROVALS VIEW ══════════
+function renderClientApprovals(){
+  const myApprovals=DB.approvals; // In real app, filter by client
+  document.getElementById('mainContent').innerHTML=`
+  <div class="sec-head">
+    <div><div class="sec-title">Approvals</div><div class="sec-sub">Review and approve deliverables from Creative Clause</div></div>
+  </div>
+  ${myApprovals.length===0?`<div class="empty-state"><div class="icon">✔</div><div class="title">No approvals yet</div><div class="sub">Deliverables submitted by your team will appear here</div></div>`:''}
+  ${myApprovals.map(a=>`
+  <div class="approval-card ${a.status}" style="margin-bottom:12px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px">${a.title}</div>
+        <div class="approval-meta">${a.project} · Submitted ${a.date}</div>
+      </div>
+      <span class="badge ${{pending:'b-amber',approved:'b-green',changes:'b-red'}[a.status]||'b-neutral'}">${{pending:'Needs your review',approved:'You approved this',changes:'Changes requested'}[a.status]||a.status}</span>
+    </div>
+    <div style="margin-bottom:10px">${a.files.map(f=>`<span class="approval-file-chip">📄 ${f}</span>`).join('')}</div>
+    ${a.note?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px">${a.note}</div>`:''}
+    ${a.status==='pending'?`
+    <div class="fg" style="margin-bottom:10px">
+      <label class="fl">Leave a comment (optional)</label>
+      <textarea class="fi" id="clientComment-${a.id}" rows="2" placeholder="Your feedback or revision notes…">${a.clientComment||''}</textarea>
+    </div>
+    <div class="approval-btns">
+      <button class="btn btn-primary" onclick="clientApprove(${a.id})">✓ Approve</button>
+      <button class="btn btn-danger" onclick="clientRequestChanges(${a.id})">Request changes</button>
+    </div>`:''}
+    ${a.status==='changes'&&a.clientComment?`<div class="approval-comment">"${a.clientComment}"</div>`:''}
+  </div>`).join('')}`;
+}
+function clientApprove(id){
+  const a=DB.approvals.find(a=>a.id===id);
+  if(a){
+    a.status='approved';
+    a.clientComment=document.getElementById('clientComment-'+id)?.value||'';
+    DB.notifications.unshift({id:Date.now(),icon:'✅',text:`<strong>${a.client}</strong> approved: ${a.title}`,time:'Just now',unread:true});
+    DB.activity.unshift({text:`<strong>${a.client}</strong> approved <strong>${a.title}</strong>`,color:'var(--green)',time:'Just now'});
+    showToast('Approved! Agency will be notified.');
+    renderClientApprovals();
+  }
+}
+function clientRequestChanges(id){
+  const a=DB.approvals.find(a=>a.id===id);
+  if(a){
+    const comment=document.getElementById('clientComment-'+id)?.value||'Please review and revise.';
+    a.status='changes';a.clientComment=comment;
+    DB.notifications.unshift({id:Date.now(),icon:'🔄',text:`<strong>${a.client}</strong> requested changes on: ${a.title}`,time:'Just now',unread:true});
+    DB.activity.unshift({text:`<strong>${a.client}</strong> requested changes on <strong>${a.title}</strong>`,color:'var(--amber)',time:'Just now'});
+    showToast('Feedback sent to agency.');
+    renderClientApprovals();
+  }
 }
 
 
