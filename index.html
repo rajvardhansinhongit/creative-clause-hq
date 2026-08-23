@@ -644,35 +644,12 @@ tbody tr:hover td{background:var(--s2);}
       <div class="lc-logo">Creative<span>Clause</span></div>
       <div class="lc-sub">Agency HQ · Sign in to continue</div>
     </div>
-    <label class="lc-label">Your name</label>
-    <input class="lc-input" id="loginName" placeholder="e.g. Rohan Shah">
     <label class="lc-label">Email address</label>
-    <input class="lc-input" id="loginEmail" placeholder="you@gmail.com">
-    <label class="lc-label" style="margin-bottom:8px">Access level</label>
-    <div class="role-grid">
-      <div class="role-btn selected" data-role="founder" onclick="selectRole(this)">
-        <span class="ri">⬡</span>
-        <span class="rn">Founder</span>
-        <span class="rd">Full access</span>
-      </div>
-      <div class="role-btn" data-role="manager" onclick="selectRole(this)">
-        <span class="ri">◈</span>
-        <span class="rn">Team Lead</span>
-        <span class="rd">Projects & people</span>
-      </div>
-      <div class="role-btn" data-role="freelancer" onclick="selectRole(this)">
-        <span class="ri">◇</span>
-        <span class="rn">Freelancer</span>
-        <span class="rd">My tasks & pay</span>
-      </div>
-      <div class="role-btn" data-role="client" onclick="selectRole(this)">
-        <span class="ri">□</span>
-        <span class="rn">Client</span>
-        <span class="rd">My projects</span>
-      </div>
-    </div>
-    <button class="lc-btn" onclick="doLogin()">Continue</button>
-    <div class="lc-hint">Production: replaced by Google OAuth</div>
+    <input class="lc-input" id="loginEmail" placeholder="you@creativeclause.com" type="email">
+    <label class="lc-label">Password</label>
+    <input class="lc-input" id="loginPassword" placeholder="••••••••" type="password">
+    <button class="lc-btn" onclick="doLogin()">Sign in</button>
+    <div class="lc-hint">Your access level is set by the founder — you'll land in the right view automatically.</div>
   </div>
 </div>
 
@@ -736,63 +713,181 @@ tbody tr:hover td{background:var(--s2);}
 <div class="toast" id="toast"></div>
 
 <script>
+  // Filled in at deploy time — see README for how this gets set.
+  window.__SUPABASE_URL__ = "https://gqmyesbcizdqdhlqmqga.supabase.co";
+  window.__SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxbXllc2JjaXpkcWRobHFtcWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NjU4NjIsImV4cCI6MjEwMzA0MTg2Mn0.tRd8dBkxH1KHnpp4S6-pzXXhs4BEBV5eNj4q5DrOmqA";
+</script>
+<script type="module">
+// ══════════ SUPABASE CONNECTION ══════════
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = window.__SUPABASE_URL__;
+const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY__;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase; // used by inline onclick handlers below
+
 // ══════════ STATE ══════════
 let currentUser = null;
 let currentSection = '';
-let selectedRole = 'founder';
+let myProfile = null; // real profiles row: {id, full_name, email, role:{key,label}, client_id}
 
+// DB starts empty; loadAllData() fills it from Supabase after login,
+// using the SAME field names the existing render functions expect,
+// so nothing below this point needs to change.
 const DB = {
-  freelancers: [
-    {id:1,name:'Arjun Mehta',role:'UI/UX Designer',email:'arjun@gmail.com',rate:'₹1,500/hr',status:'Active',skills:['Figma','Webflow','Branding'],portfolio:'arjunmehta.in',bank:'HDFC ****4521',contract:'Signed',projects:3,payout:'₹42,000',payoutStatus:'Paid',avatar:'AM',color:'#7c6dfa'},
-    {id:2,name:'Priya Sharma',role:'Copywriter',email:'priya@gmail.com',rate:'₹800/hr',status:'Active',skills:['Copywriting','SEO','Content Strategy'],portfolio:'priyawrites.com',bank:'ICICI ****8832',contract:'Signed',projects:2,payout:'₹18,400',payoutStatus:'Pending',avatar:'PS',color:'#22c55e'},
-    {id:3,name:'Rahul Nair',role:'Motion Designer',email:'rahul@gmail.com',rate:'₹1,200/hr',status:'On Leave',skills:['After Effects','Premiere','C4D'],portfolio:'rahulmotion.io',bank:'SBI ****2210',contract:'Signed',projects:0,payout:'₹0',payoutStatus:'NA',avatar:'RN',color:'#f59e0b'},
-    {id:4,name:'Sneha Patel',role:'Web Developer',email:'sneha@gmail.com',rate:'₹1,800/hr',status:'Active',skills:['React','Node.js','Webflow'],portfolio:'snehapatel.dev',bank:'Axis ****6671',contract:'Signed',projects:2,payout:'₹54,000',payoutStatus:'Paid',avatar:'SP',color:'#60a5fa'},
-  ],
-  clients: [
-    {id:1,name:'Nova Brands',industry:'FMCG',contact:'Raj Verma',email:'raj@novabrands.com',phone:'+91 98200 11234',budget:'₹2,40,000',scope:'Full brand identity + social media',brandColors:'#FF4A4A, #1A1A2E',contract:'Signed',projects:4,revenue:'₹2,40,000',status:'Active',logo:'NB',color:'#7c6dfa'},
-    {id:2,name:'Pixel Works',industry:'Tech Startup',contact:'Aditya Singh',email:'aditya@pixelworks.io',phone:'+91 99300 44512',budget:'₹98,000',scope:'Website redesign + branding',brandColors:'#00D4FF, #0A0A0A',contract:'Signed',projects:2,revenue:'₹98,000',status:'Active',logo:'PW',color:'#22c55e'},
-    {id:3,name:'Zenn Studio',industry:'Lifestyle',contact:'Meera Joshi',email:'meera@zennstudio.com',phone:'+91 70000 88321',budget:'₹1,10,000',scope:'Social campaigns + content',brandColors:'#F5E6D3, #8B6914',contract:'Pending',projects:3,revenue:'₹1,10,000',status:'Active',logo:'ZS',color:'#f59e0b'},
-  ],
-  meetings: [
-    {id:1,title:'Brand Strategy Review',client:'Nova Brands',date:'Today',time:'3:00 PM',duration:'1 hr',attendees:['Arjun Mehta','Priya Sharma'],type:'Strategy'},
-    {id:2,title:'Campaign Kickoff',client:'Zenn Studio',date:'Tomorrow',time:'11:00 AM',duration:'45 min',attendees:['Sneha Patel'],type:'Kickoff'},
-    {id:3,title:'Monthly Check-in',client:'Pixel Works',date:'21 Mar',time:'2:00 PM',duration:'30 min',attendees:['Priya Sharma'],type:'Check-in'},
-  ],
-  projects: [
-    {id:1,title:'Brand Identity Redesign',client:'Nova Brands',status:'In Progress',progress:65,deadline:'30 Mar 2026',freelancers:['Arjun Mehta','Priya Sharma'],budget:'₹85,000'},
-    {id:2,title:'Social Media Campaign Q2',client:'Zenn Studio',status:'In Progress',progress:40,deadline:'28 Mar 2026',freelancers:['Priya Sharma'],budget:'₹45,000'},
-    {id:3,title:'Website Revamp',client:'Pixel Works',status:'Review',progress:90,deadline:'22 Mar 2026',freelancers:['Sneha Patel','Arjun Mehta'],budget:'₹1,20,000'},
-  ],
-  tasks: [
-    {id:1,title:'Design homepage wireframes',project:'Website Revamp',client:'Pixel Works',deadline:'20 Mar 2026',status:'In Progress',priority:'High',freelancer:'Arjun Mehta'},
-    {id:2,title:'Write homepage copy',project:'Brand Identity Redesign',client:'Nova Brands',deadline:'25 Mar 2026',status:'Todo',priority:'Medium',freelancer:'Priya Sharma'},
-    {id:3,title:'Brand style guide',project:'Brand Identity Redesign',client:'Nova Brands',deadline:'28 Mar 2026',status:'Review',priority:'High',freelancer:'Arjun Mehta'},
-    {id:4,title:'Instagram content calendar',project:'Social Media Campaign Q2',client:'Zenn Studio',deadline:'22 Mar 2026',status:'Todo',priority:'Low',freelancer:'Priya Sharma'},
-  ],
-  activity: [
-    {text:'New client <strong>Zenn Studio</strong> onboarded',color:'var(--ac)',time:'2 min ago'},
-    {text:'Meeting scheduled with <strong>Nova Brands</strong>',color:'var(--green)',time:'1 hr ago'},
-    {text:'<strong>Arjun Mehta</strong> completed a task',color:'var(--amber)',time:'3 hr ago'},
-    {text:'Invoice <strong>#INV-007</strong> sent to Pixel Works',color:'var(--red)',time:'Yesterday'},
-  ],
-  expenses: [
-    {id:1,title:"Figma Pro (Team)",category:"Software",amount:4800,date:"2026-03-01",client:"Internal",notes:"Annual plan",receipt:false},
-    {id:2,title:"Facebook Ads – Zenn Studio",category:"Ads",amount:12000,date:"2026-03-05",client:"Zenn Studio",notes:"Q1 campaign boost",receipt:true},
-    {id:3,title:"Arjun Mehta – March payout",category:"Freelancer",amount:42000,date:"2026-03-10",client:"Nova Brands",notes:"Website project",receipt:true},
-    {id:4,title:"Adobe CC Subscription",category:"Software",amount:3600,date:"2026-03-12",client:"Internal",notes:"Monthly",receipt:false},
-    {id:5,title:"Client dinner – Nova Brands",category:"Travel",amount:3200,date:"2026-03-15",client:"Nova Brands",notes:"Strategy meeting",receipt:true},
-    {id:6,title:"Canva Pro",category:"Tools",amount:1200,date:"2026-03-18",client:"Internal",notes:"Monthly",receipt:false},
-    {id:7,title:"Sneha Patel – March payout",category:"Freelancer",amount:54000,date:"2026-03-20",client:"Pixel Works",notes:"Website revamp",receipt:true},
-    {id:8,title:"Office supplies",category:"Other",amount:850,date:"2026-03-22",client:"Internal",notes:"",receipt:false},
-  ],
-  notifications: [
-    {id:1,icon:"🔴",text:"Project <strong>Website Revamp</strong> deadline is <strong>tomorrow</strong>",time:"Now",unread:true},
-    {id:2,icon:"🟡",text:"Invoice <strong>#INV-008</strong> is overdue — Nova Brands owes ₹72K",time:"2 hrs ago",unread:true},
-    {id:3,icon:"📅",text:"Meeting with <strong>Zenn Studio</strong> tomorrow at 11:00 AM",time:"3 hrs ago",unread:true},
-    {id:4,icon:"✓",text:"<strong>Arjun Mehta</strong> completed Brand Style Guide",time:"Yesterday",unread:false},
-    {id:5,icon:"💰",text:"Payout pending for <strong>Priya Sharma</strong> — ₹18,400",time:"Yesterday",unread:false},
-  ]
+  freelancers: [], clients: [], meetings: [], projects: [], tasks: [],
+  activity: [], expenses: [], notifications: [], sops: [], approvals: [], timeLogs: []
 };
+
+const COLOR_POOL = ['#7c6dfa','#22c55e','#f59e0b','#60a5fa','#ec4899','#14b8a6'];
+function colorFor(id){ return COLOR_POOL[Math.abs(hashStr(String(id))) % COLOR_POOL.length]; }
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h<<5)-h+s.charCodeAt(i); h|=0; } return h; }
+function initials(name){ return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function inr(n){ return '₹' + Number(n||0).toLocaleString('en-IN'); }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : ''; }
+
+// ══════════ LOAD REAL DATA ══════════
+async function loadAllData(){
+  const [
+    { data: clients },
+    { data: projects },
+    { data: freelancers },
+    { data: meetings },
+    { data: tasks },
+    { data: expenses },
+    { data: notifications },
+    { data: sops },
+    { data: approvals },
+  ] = await Promise.all([
+    supabase.from('clients').select('*'),
+    supabase.from('projects').select('*, status:project_statuses(label), client:clients(name)'),
+    supabase.from('freelancers').select('*'),
+    supabase.from('meetings').select('*, client:clients(name)').order('scheduled_at'),
+    supabase.from('tasks').select('*, project:projects(name), assigned_freelancer:freelancers(name)'),
+    supabase.from('expenses').select('*, client:clients(name)').order('expense_date', {ascending:false}),
+    supabase.from('notifications').select('*').eq('profile_id', myProfile.id).order('created_at', {ascending:false}).limit(20),
+    supabase.from('sops').select('*'),
+    supabase.from('approval_requests').select('*, project:projects(name, client:clients(name))'),
+  ]);
+
+  DB.clients = (clients||[]).map(c => ({
+    id: c.id, name: c.name, industry: c.notes || '—', contact: c.contact_name,
+    email: c.contact_email, phone: c.contact_phone,
+    budget: inr(c.retainer_amount || 0), scope: c.notes || '',
+    contract: 'Signed', status: 'Active',
+    logo: initials(c.name), color: colorFor(c.id),
+    revenue: inr(c.retainer_amount || 0),
+    projects: (projects||[]).filter(p => p.client_id === c.id).length,
+  }));
+
+  DB.projects = (projects||[]).map(p => ({
+    id: p.id, title: p.name, client: p.client?.name || '—',
+    status: p.status?.label || 'New', progress: p._progress || 50,
+    deadline: fmtDate(p.due_date), budget: inr(p.budget || 0),
+    freelancers: [], client_id: p.client_id,
+  }));
+
+  DB.freelancers = (freelancers||[]).map(f => ({
+    id: f.id, name: f.name, role: f.role_title, email: f.email,
+    rate: f.rate ? `${inr(f.rate)}/hr` : '—', status: f.status === 'active' ? 'Active' : f.status === 'on_leave' ? 'On Leave' : 'Inactive',
+    skills: f.skills || [], portfolio: f.portfolio_url, bank: f.bank_details,
+    contract: f.contract_status === 'signed' ? 'Signed' : 'Pending',
+    projects: 0, payout: '—', payoutStatus: 'NA',
+    avatar: initials(f.name), color: colorFor(f.id),
+  }));
+
+  DB.meetings = (meetings||[]).map(m => ({
+    id: m.id, title: m.title, client: m.client?.name || '—',
+    date: fmtDate(m.scheduled_at), time: new Date(m.scheduled_at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}),
+    duration: `${m.duration_minutes} min`, attendees: [], type: m.meeting_type || 'Meeting',
+  }));
+
+  DB.tasks = (tasks||[]).map(t => ({
+    id: t.id, title: t.title, project: t.project?.name || '—', client: '—',
+    deadline: fmtDate(t.due_date),
+    status: t.status === 'in_progress' ? 'In Progress' : t.status === 'todo' ? 'Todo' : t.status === 'review' ? 'Review' : 'Complete',
+    priority: t.priority ? t.priority[0].toUpperCase()+t.priority.slice(1) : 'Medium',
+    freelancer: t.assigned_freelancer?.name || '—',
+  }));
+
+  DB.expenses = (expenses||[]).map(e => ({
+    id: e.id, title: e.title, category: e.category[0].toUpperCase()+e.category.slice(1),
+    amount: e.amount, date: e.expense_date, client: e.client?.name || 'Internal',
+    notes: e.notes || '', receipt: e.has_receipt,
+  }));
+
+  DB.notifications = (notifications||[]).map(n => ({
+    id: n.id, icon: n.icon || '•', text: n.text, time: fmtDate(n.created_at), unread: !n.read,
+  }));
+
+  DB.sops = sops || [];
+  DB.approvals = (approvals||[]).map(a => ({
+    id: a.id, title: a.title, project: a.project?.name || '—', client: a.project?.client?.name || '—',
+    status: a.status, description: a.description, comment: a.decision_comment,
+  }));
+
+  DB.activity = []; // populated from recent records below
+  const recent = [];
+  (clients||[]).slice(-1).forEach(c => recent.push({text:`New client <strong>${c.name}</strong> onboarded`, color:'var(--ac)', time: fmtDate(c.created_at)}));
+  DB.activity = recent;
+}
+
+// ══════════ LOGIN (real Supabase auth) ══════════
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword')?.value || '';
+  if(!email || !password){ showToast('Enter your email and password'); return; }
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error){ showToast(error.message); return; }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*, role:roles(key, label)')
+    .eq('id', data.user.id)
+    .single();
+
+  if(profileError || !profile){ showToast('No profile found for this login — contact the founder.'); return; }
+
+  myProfile = profile;
+  currentUser = {
+    name: profile.full_name, email: profile.email,
+    role: profile.role.key === 'team_member' ? 'manager' : profile.role.key, // manager = Team Lead in UI
+    avatar: initials(profile.full_name),
+  };
+
+  await loadAllData();
+
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+
+async function doLogout(){
+  await supabase.auth.signOut();
+  currentUser = null; myProfile = null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+// Restore session on page load (so refresh doesn't log you out)
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if(session){
+    const { data: profile } = await supabase.from('profiles').select('*, role:roles(key, label)').eq('id', session.user.id).single();
+    if(profile){
+      myProfile = profile;
+      currentUser = { name: profile.full_name, email: profile.email, role: profile.role.key === 'team_member' ? 'manager' : profile.role.key, avatar: initials(profile.full_name) };
+      await loadAllData();
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('app').style.display='block';
+      initApp();
+    }
+  }
+})();
+
+window.doLogin = doLogin;
+window.doLogout = doLogout;
 
 // ══════════ NAV ══════════
 const NAV = {
@@ -829,26 +924,6 @@ const SECTION_TITLES={
   sops:'SOP Library',timetracker:'Time Tracker',
   approvals:'Approvals',clientapprovals:'Approvals'
 };
-
-// ══════════ LOGIN ══════════
-function selectRole(el){
-  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedRole=el.dataset.role;
-}
-function doLogin(){
-  const name=document.getElementById('loginName').value.trim()||'Agency Owner';
-  const email=document.getElementById('loginEmail').value.trim()||'owner@creativeclause.in';
-  currentUser={name,email,role:selectedRole,avatar:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)};
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='block';
-  initApp();
-}
-function doLogout(){
-  currentUser=null;
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('app').style.display='none';
-}
 
 // ══════════ INIT ══════════
 function initApp(){
@@ -1495,27 +1570,59 @@ function wNext(){
   wizardStep++;renderWizard();
 }
 function wBack(){wizardStep--;renderWizard();}
-function wSubmitFL(){
+async function wSubmitFL(){
   wizardData.bank=document.getElementById('w-bank')?.value;
   wizardData.contract=document.getElementById('w-contract')?.value;
-  const palette=['#7c6dfa','#22c55e','#f59e0b','#60a5fa','#ef4444'];
-  const color=palette[DB.freelancers.length%palette.length];
-  const av=wizardData.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  DB.freelancers.push({id:Date.now(),name:wizardData.name,role:wizardData.role||'Freelancer',email:wizardData.email||'',rate:wizardData.rate||'TBD',status:wizardData.status||'Active',skills:wizardData.skills||[],portfolio:wizardData.portfolio||'',bank:wizardData.bank||'',contract:wizardData.contract||'Pending',projects:0,payout:'₹0',payoutStatus:'NA',avatar:av,color});
-  DB.activity.unshift({text:`<strong>${wizardData.name}</strong> onboarded as freelancer`,color:'var(--ac)',time:'Just now'});
+
+  const { data, error } = await supabase.from('freelancers').insert({
+    name: wizardData.name,
+    role_title: wizardData.role || 'Freelancer',
+    email: wizardData.email || null,
+    rate: wizardData.rate ? Number(String(wizardData.rate).replace(/[^0-9.]/g,'')) : null,
+    status: (wizardData.status || 'active').toLowerCase().replace(' ','_'),
+    skills: wizardData.skills || [],
+    portfolio_url: wizardData.portfolio || null,
+    bank_details: wizardData.bank || null,
+    contract_status: (wizardData.contract || 'pending').toLowerCase(),
+  }).select().single();
+
+  if(error){ showToast('Could not save: ' + error.message); return; }
+
+  DB.freelancers.push({
+    id:data.id, name:data.name, role:data.role_title, email:data.email,
+    rate: data.rate ? inr(data.rate)+'/hr' : 'TBD', status:'Active',
+    skills:data.skills||[], portfolio:data.portfolio_url, bank:data.bank_details,
+    contract: data.contract_status==='signed'?'Signed':'Pending',
+    projects:0, payout:'₹0', payoutStatus:'NA',
+    avatar: initials(data.name), color: colorFor(data.id),
+  });
   closeModal();showToast(`${wizardData.name} added`);
   if(currentSection==='freelancers')renderFreelancers();
   if(currentSection==='admin')renderAdmin();
   if(currentSection==='dashboard')renderDashboard();
 }
-function wSubmitCL(){
+async function wSubmitCL(){
   wizardData.brandColors=document.getElementById('w-colors')?.value;
   wizardData.contract=document.getElementById('w-contract')?.value;
-  const palette=['#7c6dfa','#22c55e','#f59e0b','#60a5fa'];
-  const color=palette[DB.clients.length%palette.length];
-  const logo=wizardData.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  DB.clients.push({id:Date.now(),name:wizardData.name,industry:wizardData.industry||'Other',contact:wizardData.contact||'',email:wizardData.email||'',phone:wizardData.phone||'',budget:wizardData.budget||'TBD',scope:wizardData.scope||'',brandColors:wizardData.brandColors||'',contract:wizardData.contract||'Pending',projects:0,revenue:'₹0',status:'Active',logo,color});
-  DB.activity.unshift({text:`<strong>${wizardData.name}</strong> onboarded as client`,color:'var(--green)',time:'Just now'});
+
+  const { data, error } = await supabase.from('clients').insert({
+    name: wizardData.name,
+    contact_name: wizardData.contact || null,
+    contact_email: wizardData.email || null,
+    contact_phone: wizardData.phone || null,
+    engagement_type: 'fixed_fee',
+    notes: `${wizardData.industry||''} — ${wizardData.scope||''}`.trim(),
+  }).select().single();
+
+  if(error){ showToast('Could not save: ' + error.message); return; }
+
+  DB.clients.push({
+    id:data.id, name:data.name, industry:wizardData.industry||'Other',
+    contact:data.contact_name, email:data.contact_email, phone:data.contact_phone,
+    budget:'TBD', scope:wizardData.scope||'', contract: (wizardData.contract||'Pending'),
+    projects:0, revenue:'₹0', status:'Active',
+    logo: initials(data.name), color: colorFor(data.id),
+  });
   closeModal();showToast(`${wizardData.name} added`);
   if(currentSection==='clients')renderClients();
   if(currentSection==='admin')renderAdmin();
@@ -1547,11 +1654,25 @@ function openAddMeeting(){
   <div class="ffoot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveMeeting()">Schedule</button></div>`;
   document.getElementById('modalBg').classList.add('open');
 }
-function saveMeeting(){
+async function saveMeeting(){
   const title=document.getElementById('m-title').value.trim();
   if(!title){showToast('Title required');return;}
-  DB.meetings.push({id:Date.now(),title,client:document.getElementById('m-client').value,date:document.getElementById('m-date').value||'TBD',time:document.getElementById('m-time').value||'TBD',duration:document.getElementById('m-dur').value||'—',attendees:[],type:document.getElementById('m-type').value});
-  DB.activity.unshift({text:`Meeting <strong>${title}</strong> scheduled`,color:'var(--green)',time:'Just now'});
+  const clientName = document.getElementById('m-client').value;
+  const client = DB.clients.find(c=>c.name===clientName);
+  const dateStr = document.getElementById('m-date').value;
+  const timeStr = document.getElementById('m-time').value;
+  const scheduledAt = (dateStr && timeStr) ? new Date(`${dateStr}T${timeStr}`).toISOString() : new Date().toISOString();
+
+  const { data, error } = await supabase.from('meetings').insert({
+    title, client_id: client?.id || null,
+    meeting_type: (document.getElementById('m-type').value||'meeting').toLowerCase(),
+    scheduled_at: scheduledAt,
+    duration_minutes: parseInt(document.getElementById('m-dur').value) || 30,
+  }).select().single();
+
+  if(error){ showToast('Could not save: '+error.message); return; }
+
+  DB.meetings.push({id:data.id,title,client:clientName,date:fmtDate(data.scheduled_at),time:document.getElementById('m-time').value||'TBD',duration:document.getElementById('m-dur').value||'—',attendees:[],type:document.getElementById('m-type').value});
   closeModal();showToast('Meeting scheduled');
   if(currentSection==='meetings')renderMeetings();
   if(currentSection==='dashboard')renderDashboard();
@@ -1565,17 +1686,31 @@ function openAddProject(){
     <div class="fg"><label class="fl">Budget</label><input class="fi" id="p-budget" placeholder="₹85,000"></div>
   </div>
   <div class="frow">
-    <div class="fg"><label class="fl">Deadline</label><input class="fi" id="p-dl" placeholder="30 Mar 2026"></div>
+    <div class="fg"><label class="fl">Deadline</label><input class="fi" id="p-dl" type="date"></div>
     <div class="fg"><label class="fl">Status</label><select class="fi-select" id="p-status"><option>In Progress</option><option>Review</option><option>Paused</option></select></div>
   </div>
   <div class="ffoot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveProject()">Create</button></div>`;
   document.getElementById('modalBg').classList.add('open');
 }
-function saveProject(){
+async function saveProject(){
   const title=document.getElementById('p-title').value.trim();
   if(!title){showToast('Title required');return;}
-  DB.projects.push({id:Date.now(),title,client:document.getElementById('p-client').value,status:document.getElementById('p-status').value,progress:0,deadline:document.getElementById('p-dl').value||'TBD',freelancers:[],budget:document.getElementById('p-budget').value||'TBD'});
-  DB.activity.unshift({text:`Project <strong>${title}</strong> created`,color:'var(--ac)',time:'Just now'});
+  const clientName = document.getElementById('p-client').value;
+  const client = DB.clients.find(c=>c.name===clientName);
+
+  const { data: defaultStatus } = await supabase.from('project_statuses').select('id').eq('is_default', true).single();
+
+  const { data, error } = await supabase.from('projects').insert({
+    client_id: client?.id, name: title,
+    status_id: defaultStatus?.id,
+    billing_type: 'fixed_fee',
+    budget: parseFloat(String(document.getElementById('p-budget').value||'0').replace(/[^0-9.]/g,'')) || null,
+    due_date: document.getElementById('p-dl').value || null,
+  }).select().single();
+
+  if(error){ showToast('Could not save: '+error.message); return; }
+
+  DB.projects.push({id:data.id,title,client:clientName,status:document.getElementById('p-status').value,progress:0,deadline:fmtDate(data.due_date),freelancers:[],budget:document.getElementById('p-budget').value||'TBD',client_id:client?.id});
   closeModal();showToast('Project created');
   if(currentSection==='projects')renderProjects();
   if(currentSection==='dashboard')renderDashboard();
@@ -1898,20 +2033,32 @@ function openAddExpense(){
   </div>`;
   document.getElementById('modalBg').classList.add('open');
 }
-function saveExpense(){
+async function saveExpense(){
   const title=document.getElementById('ex-title').value.trim();
   if(!title){showToast('Title required');return;}
   const amount=parseFloat(document.getElementById('ex-amount').value)||0;
+  const clientName=document.getElementById('ex-client').value;
+  const client = clientName!=='Internal' ? DB.clients.find(c=>c.name===clientName) : null;
+
+  const { data, error } = await supabase.from('expenses').insert({
+    title, category: (document.getElementById('ex-cat').value||'other').toLowerCase(),
+    amount, expense_date: document.getElementById('ex-date').value || new Date().toISOString().slice(0,10),
+    client_id: client?.id || null,
+    notes: document.getElementById('ex-notes').value || null,
+    has_receipt: document.getElementById('ex-receipt').checked,
+  }).select().single();
+
+  if(error){ showToast('Could not save: '+error.message); return; }
+
   DB.expenses.unshift({
-    id:Date.now(),title,
+    id:data.id,title,
     category:document.getElementById('ex-cat').value,
     amount,
-    date:document.getElementById('ex-date').value,
-    client:document.getElementById('ex-client').value,
+    date:data.expense_date,
+    client:clientName,
     notes:document.getElementById('ex-notes').value,
     receipt:document.getElementById('ex-receipt').checked
   });
-  DB.activity.unshift({text:`Expense <strong>${title}</strong> logged (₹${amount.toLocaleString('en-IN')})`,color:'var(--amber)',time:'Just now'});
   closeModal();showToast('Expense added');
   if(currentSection==='expenses')renderExpenses();
 }
@@ -2382,6 +2529,20 @@ function clientRequestChanges(id){
 
 // ══════════ INIT NOTIF ══════════
 document.addEventListener('DOMContentLoaded',function(){renderNotifList();updateNotifDot();});
+
+// ══════════ EXPOSE TO WINDOW ══════════
+// Required because this script is a module (for the Supabase import),
+// and inline onclick="..." handlers in the HTML can only see window-level names.
+[showSection,openAddModal,openOnboarding,closeModal,closeModalOut,toggleSb,closeSb,
+ toggleNotif,clearNotifs,readNotif,filterFL,filterFLStatus,filterCL,filterExpenses,
+ filterExpCat,filterSOPs,filterSOPCat,toggleSOP,openEditSOP,archiveSOP,openAddSOP,
+ saveSOP,updateSOP,adminTab,approvalTab,openAddApproval,saveApproval,cancelApproval,
+ resubmitApproval,clientApprove,clientRequestChanges,openAddExpense,saveExpense,
+ openAddMeeting,saveMeeting,openAddProject,saveProject,openAddRole,saveRole,
+ wBack,wNext,wSubmitCL,wSubmitFL,toggleSkill,askChip,appendMsg,appendLoader,
+ buildCtx,connectSheet,startTimer,stopTimer,resetTimer,openManualLog,saveManualLog,
+ markDone,sendReminder,openReminderModal,filterFL,parseDateStr,parseDeadline]
+  .forEach(fn => { if(typeof fn === 'function') window[fn.name] = fn; });
 </script>
 </body>
 </html>
